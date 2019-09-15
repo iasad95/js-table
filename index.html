@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Logs</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="m-3">
+            <h1 class="page-title"><img class="page-title__logo" src="./asad.svg" alt="" decoding="async" /> Processing Logs Status</h1>
+        </header>
+        <p id="app-error" class="app-error" hidden role="alert"></p>
+        <div class="card m-3 p-4 border-0 shadow-lg logs-card">
+            <div class="toolbar">
+                <button type="button" id="download-csv" class="btn btn-primary" disabled>Download CSV</button>
+                <button type="button" id="download-json" class="btn btn-primary" disabled>Download JSON</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered logs-table" id="myTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="./dummy-data.js"></script>
+    <script src="./index.js"></script>
+</body>
+</html>
