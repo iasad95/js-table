@@ -118,14 +118,10 @@ class RdataTB {
                 this.ShowHighlight = true;
             }
         }
-        if (Options.fixedTable != false) {
-            if (Options.fixedTable != null || Options.fixedTable === true) {
-                this.TableElement?.classList.add("table_layout_fixed");
-            } else {
-                this.TableElement?.classList.remove("table_layout_fixed");
-            }
-        } else {
+        if (Options.fixedTable) {
             this.TableElement?.classList.add("table_layout_fixed");
+        } else {
+            this.TableElement?.classList.remove("table_layout_fixed");
         }
         if (Options.ShowSearch === false) {
             document.getElementById("SearchControl")?.remove();
@@ -145,7 +141,7 @@ class RdataTB {
             return;
         }
         for (let z = 0; z < getHead.length; z++) {
-            if (getHead[z].attributes['type-date']) {
+            if (getHead[z].hasAttribute("type-date")) {
                 this.listTypeDate.push({
                     HeaderIndex: z,
                     dateVal: true
@@ -362,7 +358,8 @@ class RdataTB {
             const q = evt.target.value.toLowerCase();
             this.DataTable = this.DataSearch.filter((element) => {
                 for (let index = 0; index < this.HeaderDataTable.length; index++) {
-                    const fg = element[this.HeaderDataTable[index]].toString().toLowerCase().includes(q);
+                    const raw = element[this.HeaderDataTable[index]];
+                    const fg = String(raw == null ? "" : raw).toLowerCase().includes(q);
                     if (fg) {
                         return true;
                     }
@@ -402,7 +399,7 @@ class RdataTB {
     }
     Divide() {
         const gh = [];
-        const h = (typeof this.PageSize === "string") ? parseInt(this.PageSize) : this.PageSize;
+        const h = (typeof this.PageSize === "string") ? parseInt(this.PageSize, 10) : this.PageSize;
         for (let i = 0; i < ((this.DataTable === undefined) ? 0 : this.DataTable.length); i += h) {
             gh.push(this.DataTable.slice(i, i + h));
         }
@@ -441,23 +438,30 @@ class RdataTB {
         const ToEl = `<thead><tr>${header}</tr></thead><tbody>${row}</tbody><tfoot style="display: none;">${footer}</tfoot>`;
         this.TableElement.innerHTML = ToEl;
         for (let n = 0; n < this.HeaderDataTable.length; n++) {
-            const cv = document.getElementById(`${this.HeaderDataTable[n]}_header`);
-            document.getElementById(`${this.HeaderDataTable[n]}_header`).style.opacity = '100%';
+            const col = this.HeaderDataTable[n];
+            const cv = document.getElementById(`${col}_header`);
+            if (!cv) {
+                continue;
+            }
+            cv.style.opacity = "100%";
             cv.onclick = () => {
-                this.sort(this.HeaderDataTable[n]);
-                document.getElementById(`${this.HeaderDataTable[n]}_header`).style.opacity = '60%';
-                if (this.Assc) {
-                    document.getElementById(`${this.HeaderDataTable[n]}_header`).classList.remove('tablesorter-header-asc');
-                    document.getElementById(`${this.HeaderDataTable[n]}_header`).classList.add('tablesorter-header-desc');
+                this.sort(col);
+                const hEl = document.getElementById(`${col}_header`);
+                if (!hEl) {
+                    return;
                 }
-                else {
-                    document.getElementById(`${this.HeaderDataTable[n]}_header`).classList.remove('tablesorter-header-desc');
-                    document.getElementById(`${this.HeaderDataTable[n]}_header`).classList.add('tablesorter-header-asc');
+                hEl.style.opacity = "60%";
+                if (this.Assc) {
+                    hEl.classList.remove("tablesorter-header-asc");
+                    hEl.classList.add("tablesorter-header-desc");
+                } else {
+                    hEl.classList.remove("tablesorter-header-desc");
+                    hEl.classList.add("tablesorter-header-asc");
                 }
                 if (this.Options.sortAnimate) {
-                    const s = document.getElementsByClassName(`${this.HeaderDataTable[n]}__row`);
+                    const s = document.getElementsByClassName(`${col}__row`);
                     for (let NN = 0; NN < s.length; NN++) {
-                        setTimeout(() => s[NN].classList.add('blink_me'), 21 * NN);
+                        setTimeout(() => s[NN].classList.add("blink_me"), 21 * NN);
                     }
                 }
             };
@@ -537,17 +541,23 @@ class RdataTB {
         if (!this.ShowHighlight) {
             return;
         }
+        if (!text) {
+            return;
+        }
         const getbody = this.TableElement?.getElementsByTagName("tbody");
         const tbody = getbody?.[0];
         if (!tbody) {
             return;
         }
+        const lowerCell = (html) => html.toLowerCase();
+        const q = text.toLowerCase();
         for (let row = 0; row < tbody.rows.length; row++) {
             for (let cellsIndex = 0; cellsIndex < tbody.rows[row].cells.length; cellsIndex++) {
                 let innerHTML = tbody.rows[row].cells[cellsIndex].innerHTML;
-                const index = innerHTML.indexOf(text);
+                const index = lowerCell(innerHTML).indexOf(q);
                 if (index >= 0) {
-                    innerHTML = innerHTML.substring(0, index) + "<span style='background-color: yellow;'>" + innerHTML.substring(index, index + text.length) + "</span>" + innerHTML.substring(index + text.length);
+                    const end = index + q.length;
+                    innerHTML = innerHTML.substring(0, index) + "<span style='background-color: yellow;'>" + innerHTML.substring(index, end) + "</span>" + innerHTML.substring(end);
                     tbody.rows[row].cells[cellsIndex].innerHTML = innerHTML;
                     tbody.rows[row].cells[cellsIndex].classList.add(`${this.HeaderDataTable[cellsIndex].replace(/\s/g, "_")}__row`);
                 }
